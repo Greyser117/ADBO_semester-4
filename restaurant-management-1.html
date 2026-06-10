@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Le Petit Chateâu — Sistem Manajemen Restoran</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:    #FAF7F2;
+      --ink:      #1C1A18;
+      --gold:     #B8965A;
+      --gold-lt:  #D4AF78;
+      --muted:    #7A7060;
+      --surface:  #FFFFFF;
+      --border:   #E8E2D6;
+      --danger:   #C0392B;
+      --success:  #2C7A4B;
+      --sidebar:  #201E1A;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    .page { display: none; }
+    .page.active { display: flex; }
+
+    #loginPage {
+      min-height: 100vh;
+      align-items: stretch;
+    }
+
+    .login-visual {
+      flex: 1;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 30% 70%, rgba(184,150,90,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 20%, rgba(184,150,90,.10) 0%, transparent 60%);
+    }
+
+    .visual-logo {
+      position: relative;
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .visual-logo .script {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 72px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .visual-logo .tagline {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .visual-divider {
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      margin: 0 auto 48px;
+      position: relative;
+    }
+
+    .visual-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-style: italic;
+      color: rgba(255,255,255,.35);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 280px;
+      position: relative;
+    }
+
+    .login-panel {
+      width: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 64px 48px;
+      background: var(--surface);
+    }
+
+    .login-panel h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .login-panel .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .field-group { margin-bottom: 20px; }
+
+    .field-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .field-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--ink);
+      background: var(--cream);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .field-group input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184,150,90,.12);
+      background: #fff;
+    }
+
+    .login-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      padding: 10px 12px;
+      background: var(--cream);
+      border-left: 2px solid var(--gold);
+      border-radius: 2px;
+    }
+
+    .login-hint strong { color: var(--ink); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+
+    .btn-primary:hover { background: var(--gold); }
+    .btn-primary:active { transform: scale(.99); }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #appPage {
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 58px;
+      background: var(--sidebar);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+      flex: 1;
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-user span {
+      font-size: 13px;
+      color: rgba(255,255,255,.55);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .btn-logout {
+      padding: 6px 14px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: transparent;
+      color: rgba(255,255,255,.55);
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .app-body {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 58px);
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #252220;
+      padding: 24px 0;
+      flex-shrink: 0;
+    }
+
+    .nav-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.25);
+      padding: 0 20px;
+      margin: 20px 0 8px;
+    }
+
+    .nav-section-label:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: rgba(255,255,255,.5);
+      cursor: pointer;
+      transition: all .15s;
+      border-left: 2px solid transparent;
+      margin: 1px 0;
+    }
+
+    .nav-item:hover {
+      color: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.04);
+    }
+
+    .nav-item.active {
+      color: var(--gold);
+      border-left-color: var(--gold);
+      background: rgba(184,150,90,.08);
+    }
+
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    .main-content {
+      flex: 1;
+      padding: 32px 36px;
+      overflow-y: auto;
+    }
+
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+
+    .page-header { margin-bottom: 28px; }
+
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    .page-header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 22px;
+    }
+
+    .stat-card .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-card .value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 38px;
+      font-weight: 300;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .stat-card .delta {
+      font-size: 11px;
+      color: var(--success);
+      margin-top: 6px;
+    }
+
+    .stat-card .delta.down { color: var(--danger); }
+
+    .accent-line {
+      height: 2px;
+      background: linear-gradient(to right, var(--gold), transparent);
+      margin-bottom: 20px;
+      border-radius: 1px;
+    }
+
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-header h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-confirmed { background: #E6F4ED; color: var(--success); }
+    .badge-pending   { background: #FFF8E6; color: #9A6F00; }
+    .badge-cancelled { background: #FCECEA; color: var(--danger); }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 11px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+    }
+
+    td {
+      padding: 13px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--cream); }
+
+    /* ── MENU ── */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .menu-card-img {
+      height: 180px;
+      overflow: hidden;
+      position: relative;
+      background: var(--cream);
+    }
+
+    .menu-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s ease;
+    }
+
+    .menu-card:hover .menu-card-img img {
+      transform: scale(1.05);
+    }
+
+    .menu-card-img .img-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    .menu-card-body { padding: 16px; }
+
+    .menu-category {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .menu-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      margin-bottom: 4px;
+    }
+
+    .menu-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .menu-price {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .menu-price span {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    /* ── FORM ── */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 32px 36px;
+      max-width: 720px;
+    }
+
+    .form-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 400;
+      margin-bottom: 4px;
+    }
+
+    .form-card .form-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .form-row.full { grid-template-columns: 1fr; }
+
+    .form-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .form-field label .required { color: var(--gold); margin-left: 2px; }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink);
+      background: var(--cream);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184,150,90,.12);
+      background: #fff;
+    }
+
+    .form-field textarea { resize: vertical; min-height: 90px; }
+
+    .form-section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .form-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .table-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .table-option input[type="radio"] { display: none; }
+
+    .table-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all .15s;
+      font-size: 12px !important;
+      font-weight: 400 !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+      color: var(--muted) !important;
+    }
+
+    .table-option label .tbl-icon { font-size: 20px; margin-bottom: 4px; }
+    .table-option label .tbl-name { font-size: 12px; color: var(--ink); }
+    .table-option label .tbl-cap { font-size: 10px; color: var(--muted); }
+
+    .table-option input[type="radio"]:checked + label {
+      border-color: var(--gold);
+      background: rgba(184,150,90,.07);
+      color: var(--ink) !important;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-submit {
+      padding: 12px 28px;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-submit:hover { background: var(--gold); }
+
+    .btn-reset {
+      padding: 12px 20px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--ink);
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all .3s;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-icon { color: var(--gold); font-size: 16px; }
+
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+      .login-visual { display: none; }
+      .login-panel { width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      .stat-grid { grid-template-columns: 1fr; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .table-options { grid-template-columns: repeat(2, 1fr); }
+      .sidebar { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loginPage" class="page active">
+  <div class="login-visual">
+    <div class="visual-logo">
+      <div class="script">Le Petit Chateâu</div>
+      <div class="tagline">Restaurant Management System</div>
+    </div>
+    <div class="visual-divider"></div>
+    <div class="visual-quote">"Hidangan kami adalah hadiah"<br/>"Notre plat était un régal"</div>
+  </div>
+
+  <div class="login-panel">
+    <h2>Selamat Datang</h2>
+    <p class="subtitle">Masuk ke sistem manajemen Le Petit Chateâu</p>
+
+    <div class="field-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="username"/>
+    </div>
+
+    <div class="field-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Masukkan password" autocomplete="current-password"/>
+    </div>
+
+    <div class="login-hint">
+      Demo: <strong>admin</strong> / <strong>admin123</strong> &nbsp;·&nbsp; <strong>staff</strong> / <strong>staff123</strong>
+    </div>
+
+    <button class="btn-primary" onclick="doLogin()">Masuk</button>
+    <p class="error-msg" id="loginError">Username atau password salah.</p>
+  </div>
+</div>
+
+<div id="appPage" class="page">
+  <div class="topbar">
+    <div class="topbar-brand">Le Petit Chateâu</div>
+    <div class="topbar-user">
+      <div class="avatar" id="avatarInitial">A</div>
+      <span id="loggedName">Admin</span>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <nav class="sidebar">
+      <div class="nav-section-label">Utama</div>
+      <div class="nav-item active" onclick="showSection('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showSection('menu', this)">
+        <span class="nav-icon">🍽️</span> Menu
+      </div>
+
+      <div class="nav-section-label">Reservasi</div>
+      <div class="nav-item" onclick="showSection('reservasi', this)">
+        <span class="nav-icon">📝</span> Buat Reservasi
+      </div>
+      <div class="nav-item" onclick="showSection('daftar', this)">
+        <span class="nav-icon">📋</span> Daftar Reservasi
+      </div>
+    </nav>
+
+    <main class="main-content">
+
+      <!-- DASHBOARD -->
+      <section id="sec-dashboard" class="content-section active">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>Ringkasan operasional hari ini · <span id="today-date"></span></p>
+        </div>
+        <div class="accent-line"></div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label">Reservasi Hari Ini</div>
+            <div class="value" id="stat-today">0</div>
+            <div class="delta">↑ 12% dari kemarin</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Total Tamu</div>
+            <div class="value" id="stat-guests">0</div>
+            <div class="delta">↑ 8% dari kemarin</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Meja Tersedia</div>
+            <div class="value">8</div>
+            <div class="delta" style="color:var(--muted)">dari 12 meja</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Reservasi Pending</div>
+            <div class="value" id="stat-pending">0</div>
+            <div class="delta down" id="stat-pending-label">Perlu konfirmasi</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Reservasi Terbaru</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tamu</th>
+                <th>Tanggal & Waktu</th>
+                <th>Meja</th>
+                <th>Tamu</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentTable">
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Belum ada reservasi.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MENU -->
+      <section id="sec-menu" class="content-section">
+        <div class="page-header">
+          <h1>Menu Le Petit Chateâu</h1>
+          <p>Koleksi hidangan pilihan kami</p>
+        </div>
+        <div class="accent-line"></div>
+
+        <div class="menu-grid">
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4gRW0nH5ZSNRZ7Tb4ZQQbS_0wzFAHgUiu7wKsG3K6hmbdlwFn2xAZV18&s=10" alt="Salade Niçoise" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Pembuka</div>
+              <div class="menu-name">Salade Niçoise</div>
+              <div class="menu-desc">Salad tuna segar dengan telur rebus, zaitun, dan vinaigrette mustard Dijon.</div>
+              <div class="menu-price">Rp 85.000 <span>per porsi</span></div>
+            </div>
+          </div>
+
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSryHjixgnbLCCL6ZdLc1Ta1tAW2aXh9Ls_TT7VVvqt0Is16CndXdYCsZP&s=10" alt="Soupe à l'Oignon" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Sup</div>
+              <div class="menu-name">Soupe à l'Oignon</div>
+              <div class="menu-desc">Sup bawang caramelisasi dengan crouton roti baguette dan keju Gruyère.</div>
+              <div class="menu-price">Rp 75.000 <span>per porsi</span></div>
+            </div>
+          </div>
+
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://api.toutlevin.com/images/b0440660ebafe8f8fc899b3047a9f543003840002366.jpg?width=1920&quality=75" alt="Entrecôte Bordelaise" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Utama</div>
+              <div class="menu-name">Entrecôte Bordelaise</div>
+              <div class="menu-desc">Ribeye panggang medium-rare dengan saus anggur merah Bordeaux dan truffle.</div>
+              <div class="menu-price">Rp 285.000 <span>per porsi</span></div>
+            </div>
+          </div>
+
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxUuJ548AHaHdnr38qOUiAQY4pXaTJJz5Oya2JwtSdSswT8JATady1EEf8&s=10" alt="Saumon en Papillote" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Utama</div>
+              <div class="menu-name">Saumon en Papillote</div>
+              <div class="menu-desc">Salmon Atlantik dipanggang dalam kertas dengan herba Provençal dan lemon.</div>
+              <div class="menu-price">Rp 210.000 <span>per porsi</span></div>
+            </div>
+          </div>
+
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://www.allrecipes.com/thmb/y-S61IJkYyCUjTMGYqkaoJGwBrY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/AR-228515-simple-creme-brulee-dessert-dmfs-4x3-821623e7a86548eeb89370ac23d5f251.jpg" alt="Crème Brûlée" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Penutup</div>
+              <div class="menu-name">Crème Brûlée</div>
+              <div class="menu-desc">Custard vanili Madagaskar klasik dengan lapisan karamel crispy di atasnya.</div>
+              <div class="menu-price">Rp 65.000 <span>per porsi</span></div>
+            </div>
+          </div>
+
+          <div class="menu-card">
+            <div class="menu-card-img">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2l--5cIR1hfN3XmSqqJvcZtnFz-DNpsq5kS_XfrZP0Etgrrxgd-ZAd0IL&s=10" alt="Sélection du Sommelier" loading="lazy"/>
+            </div>
+            <div class="menu-card-body">
+              <div class="menu-category">Minuman</div>
+              <div class="menu-name">Sélection du Sommelier</div>
+              <div class="menu-desc">Pilihan anggur merah dan putih pilihan sommelier kami, disesuaikan dengan hidangan.</div>
+              <div class="menu-price">Rp 125.000 <span>per gelas</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORM RESERVASI -->
+      <section id="sec-reservasi" class="content-section">
+        <div class="page-header">
+          <h1>Buat Reservasi</h1>
+          <p>Isi formulir untuk membuat reservasi meja baru</p>
+        </div>
+        <div class="accent-line"></div>
+
+        <div class="form-card">
+          <h2>Detail Reservasi</h2>
+          <p class="form-subtitle">Kolom bertanda <span style="color:var(--gold)">*</span> wajib diisi</p>
+
+          <div class="form-section-title">Informasi Tamu</div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Nama Lengkap <span class="required">*</span></label>
+              <input type="text" id="f-name" placeholder="cth. Budi Santoso"/>
+            </div>
+            <div class="form-field">
+              <label>Nomor Telepon <span class="required">*</span></label>
+              <input type="tel" id="f-phone" placeholder="cth. 0812-3456-7890"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" id="f-email" placeholder="cth. budi@email.com"/>
+            </div>
+            <div class="form-field">
+              <label>Jumlah Tamu <span class="required">*</span></label>
+              <select id="f-guests">
+                <option value="">Pilih jumlah tamu</option>
+                <option>1 orang</option>
+                <option>2 orang</option>
+                <option>3 orang</option>
+                <option>4 orang</option>
+                <option>5 orang</option>
+                <option>6 orang</option>
+                <option>7–10 orang</option>
+                <option>Lebih dari 10 orang</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="form-section-divider"/>
+
+          <div class="form-section-title">Jadwal</div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Tanggal <span class="required">*</span></label>
+              <input type="date" id="f-date"/>
+            </div>
+            <div class="form-field">
+              <label>Waktu <span class="required">*</span></label>
+              <select id="f-time">
+                <option value="">Pilih waktu</option>
+                <option>11:00 – Makan Siang Awal</option>
+                <option>12:00 – Makan Siang</option>
+                <option>13:00 – Makan Siang</option>
+                <option>14:00 – Makan Siang Akhir</option>
+                <option>18:00 – Makan Malam Awal</option>
+                <option>19:00 – Makan Malam</option>
+                <option>20:00 – Makan Malam</option>
+                <option>21:00 – Makan Malam Akhir</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="form-section-divider"/>
+
+          <div class="form-section-title">Pilih Meja</div>
+
+          <div class="table-options" style="margin-bottom: 20px;">
+            <div class="table-option">
+              <input type="radio" name="table" id="t1" value="Meja 1 — Dekat Jendela"/>
+              <label for="t1">
+                <span class="tbl-icon">🪟</span>
+                <span class="tbl-name">Meja 1</span>
+                <span class="tbl-cap">Dekat Jendela · 2–4 pax</span>
+              </label>
+            </div>
+            <div class="table-option">
+              <input type="radio" name="table" id="t2" value="Meja 2 — Tengah"/>
+              <label for="t2">
+                <span class="tbl-icon">🪑</span>
+                <span class="tbl-name">Meja 2</span>
+                <span class="tbl-cap">Tengah Ruangan · 4–6 pax</span>
+              </label>
+            </div>
+            <div class="table-option">
+              <input type="radio" name="table" id="t3" value="Meja 3 — Pojok Privat"/>
+              <label for="t3">
+                <span class="tbl-icon">🕯️</span>
+                <span class="tbl-name">Meja 3</span>
+                <span class="tbl-cap">Pojok Privat · 2 pax</span>
+              </label>
+            </div>
+            <div class="table-option">
+              <input type="radio" name="table" id="t4" value="Meja 4 — Teras"/>
+              <label for="t4">
+                <span class="tbl-icon">🌿</span>
+                <span class="tbl-name">Meja 4</span>
+                <span class="tbl-cap">Teras Outdoor · 4–8 pax</span>
+              </label>
+            </div>
+          </div>
+
+          <hr class="form-section-divider"/>
+
+          <div class="form-section-title">Permintaan Khusus</div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Kesempatan</label>
+              <select id="f-occasion">
+                <option value="">Tidak ada / umum</option>
+                <option>Ulang Tahun 🎂</option>
+                <option>Anniversari 💑</option>
+                <option>Makan Bisnis 💼</option>
+                <option>Pernikahan 💍</option>
+                <option>Acara Keluarga 👨‍👩‍👧</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Preferensi Diet</label>
+              <select id="f-diet">
+                <option value="">Tidak ada preferensi</option>
+                <option>Vegetarian</option>
+                <option>Vegan</option>
+                <option>Halal</option>
+                <option>Bebas Gluten</option>
+                <option>Alergi Seafood</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="form-field">
+              <label>Catatan untuk Restoran</label>
+              <textarea id="f-notes" placeholder="Tulis permintaan spesial, dekorasi, atau informasi penting lainnya..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-submit" onclick="submitReservation()">Konfirmasi Reservasi</button>
+            <button class="btn-reset" onclick="resetForm()">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- DAFTAR RESERVASI -->
+      <section id="sec-daftar" class="content-section">
+        <div class="page-header">
+          <h1>Daftar Reservasi</h1>
+          <p>Semua reservasi yang telah masuk</p>
+        </div>
+        <div class="accent-line"></div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Semua Reservasi</h3>
+            <span id="total-badge" class="badge badge-confirmed">0 Reservasi</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nama Tamu</th>
+                <th>Telepon</th>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th>Meja</th>
+                <th>Tamu</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="allTable">
+              <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:28px">Belum ada reservasi.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-icon">✦</span>
+  <span id="toast-msg">Reservasi berhasil disimpan!</span>
+</div>
+
+<script>
+  const USERS = {
+    admin: { pass: 'admin123', name: 'Admin', role: 'Administrator' },
+    staff: { pass: 'staff123', name: 'Staff',  role: 'Staf Pelayan' },
+  };
+
+  let currentUser = null;
+  let reservations = [];
+  let nextId = 1;
+
+  function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginError');
+
+    if (USERS[u] && USERS[u].pass === p) {
+      currentUser = { username: u, ...USERS[u] };
+      document.getElementById('loggedName').textContent = currentUser.name;
+      document.getElementById('avatarInitial').textContent = currentUser.name[0];
+      switchPage('appPage');
+      err.style.display = 'none';
+      updateDashboard();
+      setTodayDate();
+    } else {
+      err.style.display = 'block';
+    }
+  }
+
+  function doLogout() {
+    currentUser = null;
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    switchPage('loginPage');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginPage').classList.contains('active')) {
+      doLogin();
+    }
+  });
+
+  function switchPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function showSection(name, el) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function setTodayDate() {
+    const now = new Date();
+    document.getElementById('today-date').textContent = now.toLocaleDateString('id-ID', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    const todayStr = now.toISOString().split('T')[0];
+    document.getElementById('f-date').min = todayStr;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function updateDashboard() {
+    const today = new Date().toISOString().split('T')[0];
+    const todayRes = reservations.filter(r => r.date === today);
+    const guests = todayRes.reduce((s, r) => s + parseInt(r.guests), 0);
+    const pending = reservations.filter(r => r.status === 'Pending').length;
+
+    document.getElementById('stat-today').textContent = todayRes.length;
+    document.getElementById('stat-guests').textContent = guests;
+    document.getElementById('stat-pending').textContent = pending;
+
+    const recent = [...reservations].reverse().slice(0, 5);
+    const tbody = document.getElementById('recentTable');
+
+    if (recent.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Belum ada reservasi.</td></tr>';
+    } else {
+      tbody.innerHTML = recent.map(r => `
+        <tr>
+          <td><strong>${r.name}</strong></td>
+          <td>${formatDate(r.date)} · ${r.time.split(' ')[0]}</td>
+          <td>${r.table.split('—')[0].trim()}</td>
+          <td>${r.guests}</td>
+          <td><span class="badge ${badgeClass(r.status)}">${r.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    const allTbody = document.getElementById('allTable');
+    document.getElementById('total-badge').textContent = reservations.length + ' Reservasi';
+
+    if (reservations.length === 0) {
+      allTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:28px">Belum ada reservasi.</td></tr>';
+    } else {
+      allTbody.innerHTML = reservations.map((r, i) => `
+        <tr>
+          <td style="color:var(--muted);font-size:11px">#${String(r.id).padStart(3,'0')}</td>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.phone}</td>
+          <td>${formatDate(r.date)}</td>
+          <td>${r.time.split(' ')[0]}</td>
+          <td>${r.table.split('—')[0].trim()}</td>
+          <td>${r.guests}</td>
+          <td><span class="badge ${badgeClass(r.status)}">${r.status}</span></td>
+          <td>
+            <button onclick="confirmRes(${r.id})" style="font-size:11px;padding:4px 8px;border:1px solid #2C7A4B;color:#2C7A4B;background:none;border-radius:3px;cursor:pointer;margin-right:4px">✓</button>
+            <button onclick="cancelRes(${r.id})" style="font-size:11px;padding:4px 8px;border:1px solid #C0392B;color:#C0392B;background:none;border-radius:3px;cursor:pointer">✕</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  function badgeClass(s) {
+    if (s === 'Dikonfirmasi') return 'badge-confirmed';
+    if (s === 'Dibatalkan') return 'badge-cancelled';
+    return 'badge-pending';
+  }
+
+  function formatDate(d) {
+    if (!d) return '-';
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function confirmRes(id) {
+    const r = reservations.find(x => x.id === id);
+    if (r) { r.status = 'Dikonfirmasi'; updateDashboard(); showToast('Reservasi #' + String(id).padStart(3,'0') + ' dikonfirmasi.'); }
+  }
+
+  function cancelRes(id) {
+    const r = reservations.find(x => x.id === id);
+    if (r) { r.status = 'Dibatalkan'; updateDashboard(); showToast('Reservasi #' + String(id).padStart(3,'0') + ' dibatalkan.'); }
+  }
+
+  function submitReservation() {
+    const name    = document.getElementById('f-name').value.trim();
+    const phone   = document.getElementById('f-phone').value.trim();
+    const guests  = document.getElementById('f-guests').value;
+    const date    = document.getElementById('f-date').value;
+    const time    = document.getElementById('f-time').value;
+    const tableEl = document.querySelector('input[name="table"]:checked');
+
+    if (!name || !phone || !guests || !date || !time || !tableEl) {
+      showToast('⚠ Lengkapi semua kolom wajib terlebih dahulu.');
+      return;
+    }
+
+    const res = {
+      id:       nextId++,
+      name,
+      phone,
+      email:    document.getElementById('f-email').value.trim(),
+      guests:   guests.split(' ')[0],
+      date,
+      time,
+      table:    tableEl.value,
+      occasion: document.getElementById('f-occasion').value,
+      diet:     document.getElementById('f-diet').value,
+      notes:    document.getElementById('f-notes').value.trim(),
+      status:   'Pending',
+    };
+
+    reservations.push(res);
+    updateDashboard();
+    resetForm();
+    showToast('Reservasi atas nama ' + name + ' berhasil disimpan!');
+
+    setTimeout(() => {
+      showSection('daftar', document.querySelectorAll('.nav-item')[3]);
+    }, 800);
+  }
+
+  function resetForm() {
+    ['f-name','f-phone','f-email','f-notes'].forEach(id => document.getElementById(id).value = '');
+    ['f-guests','f-time','f-occasion','f-diet'].forEach(id => document.getElementById(id).selectedIndex = 0);
+    document.getElementById('f-date').value = '';
+    document.querySelectorAll('input[name="table"]').forEach(r => r.checked = false);
+  }
+
+  setTodayDate();
+</script>
+</body>
+</html>
